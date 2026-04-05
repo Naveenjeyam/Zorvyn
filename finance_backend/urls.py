@@ -23,6 +23,7 @@ urlpatterns = [
     path("", health),
     path("health/", health),
     path("admin/", admin.site.urls),
+    path("api/auth/login",include("index")),
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),
