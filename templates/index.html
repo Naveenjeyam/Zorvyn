@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinVault — Finance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:        #07080d;
+  --bg2:       #0d0f18;
+  --bg3:       #131620;
+  --bg4:       #1a1d2e;
+  --bg5:       #222640;
+  --border:    rgba(255,255,255,.06);
+  --border2:   rgba(255,255,255,.12);
+  --text:      #e8eaf6;
+  --text2:     #8b90b8;
+  --text3:     #484d6e;
+  --gold:      #c9a84c;
+  --gold2:     #f0cc7a;
+  --emerald:   #2dd4a0;
+  --emerald2:  #6effd8;
+  --rose:      #f4617a;
+  --rose2:     #ffaab8;
+  --sky:       #56b4ef;
+  --sky2:      #a8d8f8;
+  --amber:     #f59e0b;
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'Outfit', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --r:  14px;
+  --r2: 8px;
+  --shadow: 0 0 0 1px rgba(255,255,255,.04), 0 8px 32px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 700px 500px at 10% 20%, rgba(201,168,76,.06) 0, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 90% 80%, rgba(45,212,160,.05) 0, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% 50%, rgba(86,180,239,.03) 0, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+#auth-screen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;
+  background:var(--bg);
+}
+.auth-wrap{width:460px;max-width:95vw;}
+.auth-brand{text-align:center;margin-bottom:40px;}
+.auth-brand-name{
+  font-family:var(--font-display);font-size:42px;font-weight:700;
+  letter-spacing:1px;color:var(--text);
+}
+.auth-brand-name span{color:var(--gold);}
+.auth-brand-sub{color:var(--text3);font-size:13px;margin-top:6px;font-family:var(--font-mono);letter-spacing:2px;text-transform:uppercase;}
+
+.auth-card{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:20px;padding:40px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.auth-card::before{
+  content:'';position:absolute;top:-80px;right:-80px;
+  width:240px;height:240px;
+  background:radial-gradient(circle, rgba(201,168,76,.1), transparent 70%);
+  pointer-events:none;
+}
+
+.tab-row{display:flex;gap:2px;background:var(--bg3);border-radius:10px;padding:3px;margin-bottom:28px;}
+.tab{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;
+  font-family:var(--font-body);font-weight:500;font-size:13px;color:var(--text2);transition:.2s;}
+.tab.active{background:var(--bg4);color:var(--gold2);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+
+.field{margin-bottom:18px;}
+.field label{
+  display:block;font-size:11px;font-family:var(--font-mono);
+  color:var(--text3);margin-bottom:7px;letter-spacing:1.5px;text-transform:uppercase;
+}
+.field input,.field select{
+  width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:12px 14px;color:var(--text);
+  font-family:var(--font-body);font-size:14px;outline:none;transition:.2s;
+}
+.field input:focus,.field select:focus{border-color:rgba(201,168,76,.5);box-shadow:0 0 0 3px rgba(201,168,76,.08);}
+.field select option{background:var(--bg3);}
+
+.btn-primary{
+  width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#a07830);
+  color:#0a0800;border:none;border-radius:var(--r2);
+  font-family:var(--font-body);font-weight:600;font-size:14px;
+  cursor:pointer;transition:.2s;letter-spacing:.3px;
+}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-primary:active{transform:translateY(0);}
+
+.btn-outline{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text2);padding:9px 18px;border-radius:var(--r2);
+  font-family:var(--font-body);font-size:13px;cursor:pointer;transition:.2s;
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold2);}
+.btn-sm{padding:7px 16px;font-size:12px;width:auto;}
+.btn-xs{padding:5px 11px;font-size:11px;width:auto;}
+.btn-danger{background:rgba(244,97,122,.15);border:1px solid rgba(244,97,122,.3);color:var(--rose2);padding:5px 11px;border-radius:var(--r2);font-size:11px;cursor:pointer;transition:.2s;}
+.btn-danger:hover{background:rgba(244,97,122,.25);}
+.btn-success{background:rgba(45,212,160,.15);border:1px solid rgba(45,212,160,.3);color:var(--emerald2);padding:5px 11px;border-radius:var(--r2);font-size:11px;cursor:pointer;transition:.2s;}
+
+.auth-hints{margin-top:24px;background:var(--bg3);border-radius:10px;padding:16px;font-size:12px;color:var(--text3);}
+.auth-hints strong{color:var(--text2);display:block;margin-bottom:8px;font-family:var(--font-mono);}
+.hint-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+.hint-row:last-child{border:none;}
+.hint-role{font-family:var(--font-mono);font-size:11px;}
+.hint-role.admin{color:var(--gold);}
+.hint-role.analyst{color:var(--sky);}
+.hint-role.viewer{color:var(--text2);}
+
+.err-box{
+  background:rgba(244,97,122,.08);border:1px solid rgba(244,97,122,.25);
+  color:var(--rose2);border-radius:var(--r2);padding:10px 14px;
+  font-size:13px;margin-bottom:16px;display:none;
+}
+.err-box.show{display:block;}
+
+#app{display:none;min-height:100vh;}
+
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:248px;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:50;
+}
+.sidebar-top{padding:24px 20px 16px;border-bottom:1px solid var(--border);}
+.sidebar-logo{font-family:var(--font-display);font-size:22px;font-weight:700;letter-spacing:.5px;}
+.sidebar-logo span{color:var(--gold);}
+.role-pill{
+  display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+  padding:4px 12px;border-radius:20px;font-size:10px;
+  font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;
+}
+.role-pill.admin{background:rgba(201,168,76,.1);color:var(--gold2);border:1px solid rgba(201,168,76,.2);}
+.role-pill.analyst{background:rgba(86,180,239,.1);color:var(--sky2);border:1px solid rgba(86,180,239,.2);}
+.role-pill.viewer{background:rgba(255,255,255,.04);color:var(--text2);border:1px solid var(--border2);}
+
+.nav{flex:1;padding:16px 10px;overflow-y:auto;}
+.nav-section{
+  font-size:9px;font-family:var(--font-mono);font-weight:500;
+  color:var(--text3);letter-spacing:2px;text-transform:uppercase;
+  padding:14px 10px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:10px;cursor:pointer;color:var(--text2);
+  font-weight:400;font-size:13px;transition:.15s;margin-bottom:1px;
+  position:relative;
+}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:rgba(201,168,76,.08);color:var(--gold2);}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;background:var(--gold);border-radius:2px;
+}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7;}
+.nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
+
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+.user-row{display:flex;align-items:center;gap:10px;}
+.avatar{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--gold),#7a5c1a);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:14px;color:#0a0800;flex-shrink:0;
+}
+.user-name{font-weight:500;font-size:13px;line-height:1.3;}
+.user-email{font-size:10px;color:var(--text3);font-family:var(--font-mono);}
+.logout-btn{
+  margin-left:auto;background:none;border:none;
+  color:var(--text3);cursor:pointer;padding:6px;border-radius:6px;transition:.15s;
+}
+.logout-btn:hover{color:var(--rose);background:rgba(244,97,122,.08);}
+
+.main{margin-left:248px;min-height:100vh;position:relative;z-index:1;}
+.page{display:none;padding:32px 36px;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.page-head{margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;}
+.page-title{font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-.3px;}
+.page-sub{color:var(--text3);font-size:12px;margin-top:5px;font-family:var(--font-mono);letter-spacing:.5px;}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);}
+.card-title{
+  font-family:var(--font-mono);font-size:10px;font-weight:500;
+  color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;
+}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.stat{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 22px;position:relative;overflow:hidden;transition:.2s;
+  box-shadow:var(--shadow);
+}
+.stat:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-line{position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-line.g{background:linear-gradient(90deg,var(--emerald),transparent);}
+.stat-line.r{background:linear-gradient(90deg,var(--rose),transparent);}
+.stat-line.y{background:linear-gradient(90deg,var(--gold),transparent);}
+.stat-line.b{background:linear-gradient(90deg,var(--sky),transparent);}
+.stat-label{font-size:10px;font-family:var(--font-mono);color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.stat-value{font-family:var(--font-mono);font-size:24px;font-weight:500;letter-spacing:-1px;}
+.stat-value.g{color:var(--emerald);}
+.stat-value.r{color:var(--rose);}
+.stat-value.y{color:var(--gold2);}
+.stat-value.b{color:var(--sky2);}
+.stat-badge{
+  position:absolute;right:16px;top:16px;padding:4px 8px;border-radius:6px;
+  font-size:10px;font-family:var(--font-mono);
+}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.g64{display:grid;grid-template-columns:6fr 4fr;gap:16px;}
+.g46{display:grid;grid-template-columns:4fr 6fr;gap:16px;}
+
+.chart-box{position:relative;height:220px;}
+.chart-box.tall{height:280px;}
+.chart-box.xs{height:160px;}
+
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{
+  font-family:var(--font-mono);font-weight:500;font-size:10px;
+  color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;
+  padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;
+}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);}
+tr:last-child td{border:none;}
+tr:hover td{background:rgba(255,255,255,.015);}
+td.primary{color:var(--text);font-weight:500;}
+td.mono{font-family:var(--font-mono);font-size:12px;}
+
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:10px;font-family:var(--font-mono);}
+.badge.income{background:rgba(45,212,160,.1);color:var(--emerald);border:1px solid rgba(45,212,160,.2);}
+.badge.expense{background:rgba(244,97,122,.1);color:var(--rose2);border:1px solid rgba(244,97,122,.2);}
+.badge.admin{background:rgba(201,168,76,.1);color:var(--gold2);border:1px solid rgba(201,168,76,.2);}
+.badge.analyst{background:rgba(86,180,239,.1);color:var(--sky2);border:1px solid rgba(86,180,239,.2);}
+.badge.viewer{background:rgba(255,255,255,.04);color:var(--text2);border:1px solid var(--border2);}
+.badge.active{background:rgba(45,212,160,.08);color:var(--emerald);}
+.badge.inactive{background:rgba(244,97,122,.08);color:var(--rose2);}
+
+.filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+.filters input,.filters select{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:8px 12px;color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;transition:.2s;
+}
+.filters input:focus,.filters select:focus{border-color:rgba(201,168,76,.4);}
+.filters select option{background:var(--bg3);}
+
+.pager{display:flex;align-items:center;gap:6px;margin-top:14px;justify-content:flex-end;}
+.pager-btn{
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);
+  padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font-mono);transition:.15s;
+}
+.pager-btn:hover{border-color:var(--gold);color:var(--gold);}
+.pager-btn.active{background:rgba(201,168,76,.15);color:var(--gold2);border-color:rgba(201,168,76,.3);}
+.pager-btn:disabled{opacity:.3;cursor:not-allowed;}
+.pager-info{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-right:6px;}
+
+.act-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.act-item:last-child{border:none;}
+.act-dot{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.act-dot.income{background:rgba(45,212,160,.1);}
+.act-dot.expense{background:rgba(244,97,122,.1);}
+.act-info{flex:1;min-width:0;}
+.act-cat{font-size:13px;color:var(--text);font-weight:500;}
+.act-date{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:2px;}
+.act-amt{font-family:var(--font-mono);font-size:13px;font-weight:500;white-space:nowrap;}
+.act-amt.income{color:var(--emerald);}
+.act-amt.expense{color:var(--rose2);}
+
+.cbar{margin-bottom:14px;}
+.cbar-head{display:flex;justify-content:space-between;margin-bottom:5px;}
+.cbar-name{font-size:12px;color:var(--text2);}
+.cbar-val{font-family:var(--font-mono);font-size:12px;color:var(--text);}
+.cbar-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.cbar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.16,1,.3,1);}
+.cbar-fill.income{background:linear-gradient(90deg,var(--emerald),var(--emerald2));}
+.cbar-fill.expense{background:linear-gradient(90deg,var(--rose),var(--rose2));}
+
+.cat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px;transition:.2s;
+}
+.cat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.cat-name{font-family:var(--font-display);font-size:16px;font-weight:600;margin-bottom:4px;}
+.cat-desc{font-size:12px;color:var(--text3);margin-bottom:12px;}
+.cat-meta{font-size:10px;font-family:var(--font-mono);color:var(--text3);}
+.cat-actions{display:flex;gap:6px;margin-top:12px;}
+
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  z-index:300;display:none;align-items:center;justify-content:center;
+}
+.modal-bg.show{display:flex;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:18px;
+  width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.6);
+}
+.modal-head{padding:22px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:var(--font-display);font-size:18px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:22px;line-height:1;padding:2px 6px;border-radius:4px;transition:.15s;}
+.modal-close:hover{color:var(--text);background:var(--bg3);}
+.modal-body{padding:22px 24px;}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+
+.profile-wrap{display:grid;grid-template-columns:300px 1fr;gap:20px;}
+.profile-avatar{
+  width:64px;height:64px;border-radius:16px;
+  background:linear-gradient(135deg,var(--gold),#6a4a0e);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:26px;color:#0a0800;
+  margin-bottom:14px;
+}
+.profile-name{font-family:var(--font-display);font-size:20px;font-weight:600;}
+.profile-email{font-size:12px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border:none;}
+.info-key{font-size:10px;font-family:var(--font-mono);color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+.info-val{font-size:13px;font-family:var(--font-mono);color:var(--text);}
+
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast-item{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:10px;
+  padding:12px 18px;font-size:13px;color:var(--text);
+  min-width:260px;pointer-events:auto;
+  animation:toastIn .3s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.toast-item.success{border-left:3px solid var(--emerald);}
+.toast-item.error{border-left:3px solid var(--rose);}
+.toast-item.info{border-left:3px solid var(--gold);}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+.loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--text3);font-family:var(--font-mono);font-size:12px;}
+.spin{width:20px;height:20px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin-right:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:48px;color:var(--text3);}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.3;}
+.empty-txt{font-size:13px;font-family:var(--font-mono);}
+
+.analytics-kpi{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;
+}
+.kpi-box{
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:14px 18px;
+}
+.kpi-label{font-size:10px;font-family:var(--font-mono);color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.kpi-val{font-family:var(--font-mono);font-size:18px;font-weight:500;}
+
+.divider{height:1px;background:var(--border);margin:20px 0;}
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-brand">
+      <div class="auth-brand-name">Fin<span>Vault</span></div>
+      <div class="auth-brand-sub">Finance Intelligence Platform</div>
+    </div>
+    <div class="auth-card">
+      <div class="tab-row">
+        <div class="tab active" onclick="switchTab('login')">Sign In</div>
+        <div class="tab" onclick="switchTab('register')">Register</div>
+      </div>
+      <div id="auth-err" class="err-box"></div>
+
+      <div id="login-form">
+        <div class="field"><label>Email Address</label><input type="email" id="l-email" placeholder="admin@finance.com" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+        <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+        <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+      </div>
+
+      <div id="reg-form" style="display:none">
+        <div class="field"><label>Full Name</label><input type="text" id="r-name" placeholder="Your full name"></div>
+        <div class="field"><label>Email Address</label><input type="email" id="r-email" placeholder="you@example.com"></div>
+        <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Minimum 6 characters"></div>
+        <div class="field"><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="Repeat password"></div>
+        <button class="btn-primary" onclick="handleRegister()">Create Account</button>
+      </div>
+
+      <div class="auth-hints">
+        <strong>// Test Accounts</strong>
+        <div class="hint-row"><span class="hint-role admin">ADMIN</span><span>admin@finance.com / Admin@1234</span></div>
+        <div class="hint-row"><span class="hint-role analyst">ANALYST</span><span>analyst@finance.com / Analyst@1234</span></div>
+        <div class="hint-row"><span class="hint-role viewer">VIEWER</span><span>viewer@finance.com / Viewer@1234</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo">Fin<span>Vault</span></div>
+      <div class="role-pill" id="role-pill">viewer</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" onclick="goto('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" id="nav-analytics" onclick="goto('analytics')" style="display:none">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Analytics
+      </div>
+      <div class="nav-section">Finance</div>
+      <div class="nav-item" onclick="goto('records')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Records
+      </div>
+      <div class="nav-item" onclick="goto('categories')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        Categories
+      </div>
+      <div class="nav-section" id="admin-nav-section" style="display:none">Administration</div>
+      <div class="nav-item" id="nav-users" onclick="goto('users')" style="display:none">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+      </div>
+      <div class="nav-section">Account</div>
+      <div class="nav-item" onclick="goto('profile')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar" id="sb-avatar">U</div>
+        <div>
+          <div class="user-name" id="sb-name">User</div>
+          <div class="user-email" id="sb-email">—</div>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()" title="Logout">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <div class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">// financial overview</div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text3)" id="dash-date"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat"><div class="stat-line g"></div>
+          <div class="stat-label">Total Income</div>
+          <div class="stat-value g" id="s-income">—</div>
+          <div class="stat-badge" style="background:rgba(45,212,160,.08);color:var(--emerald);font-family:var(--font-mono);font-size:10px;" id="s-income-count">— entries</div>
+        </div>
+        <div class="stat"><div class="stat-line r"></div>
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value r" id="s-expense">—</div>
+          <div class="stat-badge" style="background:rgba(244,97,122,.08);color:var(--rose2);font-family:var(--font-mono);font-size:10px;" id="s-expense-count">— entries</div>
+        </div>
+        <div class="stat"><div class="stat-line y"></div>
+          <div class="stat-label">Net Balance</div>
+          <div class="stat-value y" id="s-balance">—</div>
+          <div class="stat-badge" style="background:rgba(201,168,76,.08);color:var(--gold2);font-family:var(--font-mono);font-size:10px;" id="s-balance-tag">—</div>
+        </div>
+        <div class="stat"><div class="stat-line b"></div>
+          <div class="stat-label">Total Records</div>
+          <div class="stat-value b" id="s-total">—</div>
+          <div class="stat-badge" style="background:rgba(86,180,239,.08);color:var(--sky2);font-family:var(--font-mono);font-size:10px;">transactions</div>
+        </div>
+      </div>
+
+      <div class="g64" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-title">Monthly Income vs Expenses</div>
+          <div class="chart-box"><canvas id="ch-monthly"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Recent Activity</div>
+          <div id="act-list"><div class="loading"><div class="spin"></div>Loading...</div></div>
+        </div>
+      </div>
+
+      <div class="g2" style="margin-bottom:16px;" id="dash-analytics-row">
+        <div class="card">
+          <div class="card-title">Expense by Category</div>
+          <div id="cat-bars"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Income vs Expense Split</div>
+          <div class="chart-box"><canvas id="ch-donut"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-analytics">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Analytics</div>
+          <div class="page-sub">// trends · breakdowns · insights</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <select id="an-year" onchange="loadAnalytics()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;">
+            <option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="analytics-kpi" id="an-kpi">
+        <div class="kpi-box"><div class="kpi-label">Total Income</div><div class="kpi-val g" id="an-income">—</div></div>
+        <div class="kpi-box"><div class="kpi-label">Total Expenses</div><div class="kpi-val r" id="an-expense">—</div></div>
+        <div class="kpi-box"><div class="kpi-label">Net Balance</div><div class="kpi-val y" id="an-balance">—</div></div>
+      </div>
+
+      <div class="g2" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-title">Monthly Income Trend</div>
+          <div class="chart-box"><canvas id="ch-income-trend"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Monthly Expense Trend</div>
+          <div class="chart-box"><canvas id="ch-expense-trend"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Net Balance — Monthly (income minus expenses)</div>
+        <div class="chart-box"><canvas id="ch-net"></canvas></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Weekly Trend — Last 8 Weeks</div>
+        <div class="chart-box xs"><canvas id="ch-weekly"></canvas></div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px;">Category Breakdown — Expenses</div>
+          <div id="an-cat-expense"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px;">Category Breakdown — Income</div>
+          <div id="an-cat-income"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-records">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Financial Records</div>
+          <div class="page-sub">// all transactions</div>
+        </div>
+        <button class="btn-outline btn-sm" id="btn-add-record" onclick="openRecordModal()" style="display:none">+ Add Record</button>
+      </div>
+      <div class="filters">
+        <select id="f-type" onchange="loadRecords(1)"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>
+        <select id="f-cat" onchange="loadRecords(1)"><option value="">All Categories</option></select>
+        <input type="date" id="f-from" onchange="loadRecords(1)" placeholder="From">
+        <input type="date" id="f-to" onchange="loadRecords(1)" placeholder="To">
+        <input type="text" id="f-search" onkeyup="debSearch()" placeholder="Search notes…" style="min-width:180px;">
+        <button class="btn-outline btn-sm" onclick="clearFilters()">Clear</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Notes</th><th>By</th>
+              <th id="th-act" style="display:none">Actions</th>
+            </tr></thead>
+            <tbody id="rec-tbody"><tr><td colspan="7"><div class="loading"><div class="spin"></div>Loading…</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="pager" id="rec-pager"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-categories">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Categories</div>
+          <div class="page-sub">// record classification</div>
+        </div>
+        <button class="btn-outline btn-sm" id="btn-add-cat" onclick="openCatModal()" style="display:none">+ Add Category</button>
+      </div>
+      <div class="g3" id="cat-grid">
+        <div class="loading" style="grid-column:1/-1"><div class="spin"></div>Loading…</div>
+      </div>
+    </div>
+
+    <div class="page" id="page-users">
+      <div class="page-head">
+        <div>
+          <div class="page-title">User Management</div>
+          <div class="page-sub">// roles · status · access</div>
+        </div>
+        <button class="btn-outline btn-sm" onclick="openUserModal()">+ Add User</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody"><tr><td colspan="6"><div class="loading"><div class="spin"></div>Loading…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-profile">
+      <div class="page-head">
+        <div><div class="page-title">My Profile</div><div class="page-sub">// account settings</div></div>
+      </div>
+      <div class="profile-wrap">
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="profile-avatar" id="pr-avatar">U</div>
+            <div class="profile-name" id="pr-name">—</div>
+            <div class="profile-email" id="pr-email">—</div>
+            <div class="divider"></div>
+            <div class="info-row"><span class="info-key">Role</span><span class="info-val" id="pr-role">—</span></div>
+            <div class="info-row"><span class="info-key">Status</span><span class="info-val" id="pr-status">—</span></div>
+            <div class="info-row"><span class="info-key">Joined</span><span class="info-val" id="pr-joined">—</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title">Update Name</div>
+            <div class="field"><label>Full Name</label><input type="text" id="pr-upd-name" placeholder="Your name"></div>
+            <button class="btn-outline btn-sm" onclick="updateProfile()">Save Changes</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Change Password</div>
+            <div class="field"><label>Current Password</label><input type="password" id="pw-old" placeholder="Current password"></div>
+            <div class="field"><label>New Password</label><input type="password" id="pw-new" placeholder="Min 6 characters"></div>
+            <div class="field"><label>Confirm New</label><input type="password" id="pw-new2" placeholder="Repeat new password"></div>
+            <button class="btn-outline btn-sm" onclick="changePwd()">Update Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="modal-bg" id="modal-record">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-rec-title">Add Record</div>
+      <button class="modal-close" onclick="closeModal('modal-record')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="err-box" id="rec-err"></div>
+      <input type="hidden" id="rec-id">
+      <div class="field"><label>Amount (₹)</label><input type="number" id="rec-amount" placeholder="0.00" step="0.01" min="0.01"></div>
+      <div class="field"><label>Type</label><select id="rec-type"><option value="income">Income</option><option value="expense">Expense</option></select></div>
+      <div class="field"><label>Category</label><select id="rec-cat"><option value="">— No Category —</option></select></div>
+      <div class="field"><label>Date</label><input type="date" id="rec-date"></div>
+      <div class="field"><label>Notes</label><input type="text" id="rec-notes" placeholder="Optional description"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline btn-sm" onclick="closeModal('modal-record')">Cancel</button>
+      <button class="btn-outline btn-sm" style="border-color:rgba(201,168,76,.4);color:var(--gold2);" onclick="saveRecord()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-cat">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-cat-title">Add Category</div>
+      <button class="modal-close" onclick="closeModal('modal-cat')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cat-id">
+      <div class="field"><label>Name</label><input type="text" id="cat-name" placeholder="e.g. Salary"></div>
+      <div class="field"><label>Description</label><input type="text" id="cat-desc" placeholder="Optional"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline btn-sm" onclick="closeModal('modal-cat')">Cancel</button>
+      <button class="btn-outline btn-sm" style="border-color:rgba(201,168,76,.4);color:var(--gold2);" onclick="saveCat()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-user">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-user-title">Add User</div>
+      <button class="modal-close" onclick="closeModal('modal-user')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="err-box" id="user-err"></div>
+      <input type="hidden" id="user-id">
+      <div id="user-create-fields">
+        <div class="field"><label>Full Name</label><input type="text" id="u-name" placeholder="Full name"></div>
+        <div class="field"><label>Email</label><input type="email" id="u-email" placeholder="Email address"></div>
+        <div class="field"><label>Password</label><input type="password" id="u-pass" placeholder="Min 6 chars"></div>
+        <div class="field"><label>Confirm Password</label><input type="password" id="u-pass2" placeholder="Repeat password"></div>
+      </div>
+      <div class="field"><label>Role</label>
+        <select id="u-role"><option value="viewer">Viewer</option><option value="analyst">Analyst</option><option value="admin">Admin</option></select>
+      </div>
+      <div class="field" id="u-status-field" style="display:none"><label>Status</label>
+        <select id="u-status"><option value="true">Active</option><option value="false">Inactive</option></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline btn-sm" onclick="closeModal('modal-user')">Cancel</button>
+      <button class="btn-outline btn-sm" style="border-color:rgba(201,168,76,.4);color:var(--gold2);" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000/api';
+let access  = localStorage.getItem('fl_access')  || '';
+let refresh = localStorage.getItem('fl_refresh') || '';
+let ME      = JSON.parse(localStorage.getItem('fl_user') || 'null');
+let curPage = 'dashboard';
+let allCats = [];
+let charts  = {};
+let searchT = null;
+
+const money  = n => '₹' + Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fdate  = d => new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+const isAdmin   = () => ME?.role === 'admin';
+const isAnalyst = () => ME?.role === 'analyst' || isAdmin();
+
+const CHART_DEFAULTS = {
+  color: {
+    grid:   'rgba(255,255,255,.04)',
+    tick:   '#484d6e',
+    legend: '#8b90b8',
+  },
+  font: "'JetBrains Mono', monospace",
+};
+
+function chartOpts(extra = {}) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: CHART_DEFAULTS.color.legend, font: { family: CHART_DEFAULTS.font, size: 11 }, boxWidth: 12, padding: 16 } },
+      tooltip: { backgroundColor: '#1a1d2e', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, titleFont: { family: CHART_DEFAULTS.font }, bodyFont: { family: CHART_DEFAULTS.font } },
+      ...extra.plugins,
+    },
+    scales: extra.noScale ? undefined : {
+      x: { ticks: { color: CHART_DEFAULTS.color.tick, font: { family: CHART_DEFAULTS.font, size: 10 } }, grid: { color: CHART_DEFAULTS.color.grid } },
+      y: { ticks: { color: CHART_DEFAULTS.color.tick, font: { family: CHART_DEFAULTS.font, size: 10 }, callback: v => '₹' + Number(v).toLocaleString('en-IN') }, grid: { color: CHART_DEFAULTS.color.grid } },
+      ...extra.scales,
+    },
+    ...extra,
+  };
+}
+
+function mkChart(id, type, data, opts) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, { type, data, options: opts });
+  return charts[id];
+}
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (access) headers['Authorization'] = 'Bearer ' + access;
+  let res = await fetch(API + path, { ...opts, headers });
+  if (res.status === 401 && refresh) {
+    const r2 = await fetch(API + '/auth/token/refresh/', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh }),
+    });
+    if (r2.ok) {
+      const d = await r2.json();
+      access = d.access;
+      localStorage.setItem('fl_access', access);
+      headers['Authorization'] = 'Bearer ' + access;
+      res = await fetch(API + path, { ...opts, headers });
+    } else { handleLogout(); return null; }
+  }
+  return res;
+}
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.style.opacity = '0', 3000);
+  setTimeout(() => el.remove(), 3400);
+}
+
+function showErr(id, msg) { const e = document.getElementById(id); e.textContent = msg; e.classList.add('show'); }
+function hideErr(id) { document.getElementById(id)?.classList.remove('show'); }
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function debSearch() { clearTimeout(searchT); searchT = setTimeout(() => loadRecords(1), 500); }
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', tab === 'login' ? i === 0 : i === 1));
+  document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('reg-form').style.display   = tab === 'register' ? '' : 'none';
+  hideErr('auth-err');
+}
+
+async function handleLogin() {
+  hideErr('auth-err');
+  const email = document.getElementById('l-email').value.trim();
+  const password = document.getElementById('l-pass').value;
+  if (!email || !password) return showErr('auth-err', 'Please fill in both fields.');
+  const res = await fetch(API + '/auth/login/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+  const data = await res.json();
+  if (!res.ok) return showErr('auth-err', data.detail || 'Invalid credentials.');
+  access = data.access; refresh = data.refresh;
+  localStorage.setItem('fl_access', access);
+  localStorage.setItem('fl_refresh', refresh);
+  await loadMe();
+  bootApp();
+}
+
+async function handleRegister() {
+  hideErr('auth-err');
+  const full_name = document.getElementById('r-name').value.trim();
+  const email     = document.getElementById('r-email').value.trim();
+  const password  = document.getElementById('r-pass').value;
+  const confirm_password = document.getElementById('r-pass2').value;
+  if (!full_name || !email || !password) return showErr('auth-err', 'Please fill all fields.');
+  if (password !== confirm_password) return showErr('auth-err', 'Passwords do not match.');
+  const res = await fetch(API + '/auth/register/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name, email, password, confirm_password }) });
+  const data = await res.json();
+  if (!res.ok) return showErr('auth-err', JSON.stringify(data));
+  access = data.tokens.access; refresh = data.tokens.refresh;
+  localStorage.setItem('fl_access', access);
+  localStorage.setItem('fl_refresh', refresh);
+  ME = data.user;
+  localStorage.setItem('fl_user', JSON.stringify(ME));
+  bootApp();
+}
+
+async function loadMe() {
+  const res = await api('/auth/profile/');
+  if (res?.ok) { ME = await res.json(); localStorage.setItem('fl_user', JSON.stringify(ME)); }
+}
+
+async function handleLogout() {
+  if (refresh) await api('/auth/logout/', { method: 'POST', body: JSON.stringify({ refresh }) });
+  access = ''; refresh = ''; ME = null;
+  localStorage.clear();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  Object.values(charts).forEach(c => c?.destroy());
+  charts = {};
+  toast('Logged out.', 'info');
+}
+
+function bootApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('sb-name').textContent  = ME?.full_name || 'User';
+  document.getElementById('sb-email').textContent = ME?.email || '';
+  document.getElementById('sb-avatar').textContent = (ME?.full_name || 'U')[0].toUpperCase();
+  const pill = document.getElementById('role-pill');
+  pill.textContent = ME?.role || 'viewer';
+  pill.className = `role-pill ${ME?.role || 'viewer'}`;
+
+  if (isAnalyst()) document.getElementById('nav-analytics').style.display = '';
+  if (isAdmin()) {
+    document.getElementById('admin-nav-section').style.display = '';
+    document.getElementById('nav-users').style.display = '';
+  }
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  goto('dashboard');
+  loadCats(); 
+}
+
+function goto(page) {
+  curPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(`'${page}'`)) n.classList.add('active');
+  });
+  const map = { dashboard: loadDashboard, analytics: loadAnalytics, records: () => loadRecords(1), categories: loadCatsPage, users: loadUsers, profile: loadProfile };
+  map[page]?.();
+}
+
+async function loadDashboard() {
+  const [sumRes, actRes] = await Promise.all([
+    api('/dashboard/summary/'),
+    api('/dashboard/recent-activity/?limit=7'),
+  ]);
+
+  if (sumRes?.ok) {
+    const d = await sumRes.json();
+
+    document.getElementById('s-income').textContent  = money(d.total_income);
+    document.getElementById('s-expense').textContent = money(d.total_expenses);
+    document.getElementById('s-balance').textContent = money(d.net_balance);
+    document.getElementById('s-total').textContent   = d.total_records;
+
+    document.getElementById('s-income-count').textContent  = `${d.income_count || '—'} entries`;
+    document.getElementById('s-expense-count').textContent = `${d.expense_count || '—'} entries`;
+
+    const bal = d.net_balance;
+    document.getElementById('s-balance-tag').textContent = bal >= 0 ? 'surplus' : 'deficit';
+    document.getElementById('s-balance-tag').style.color = bal >= 0 ? 'var(--emerald)' : 'var(--rose)';
+
+    mkChart('ch-donut', 'doughnut', {
+      labels: ['Income', 'Expense'],
+      datasets: [{
+        data: [d.total_income, d.total_expenses],
+        backgroundColor: [
+          'rgba(45,212,160,.7)',
+          'rgba(244,97,122,.7)'
+        ],
+        borderColor: [
+          'var(--emerald)',
+          'var(--rose)'
+        ],
+        borderWidth: 2,
+        hoverOffset: 10
+      }]
+    }, chartOpts({
+      noScale: true,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#8b90b8',
+            font: { family: "'JetBrains Mono',monospace", size: 11 },
+            padding: 20,
+            boxWidth: 10
+          }
+        }
+      }
+    }));
+  }
+
+  if (actRes?.ok) {
+    const d = await actRes.json();
+    renderActivity(d.recent_activity);
+  }
+
+  loadMonthlyChart('ch-monthly');
+  loadCatBars();
+  document.getElementById('dash-analytics-row').style.display = '';
+}
+
+function renderActivity(items) {
+  const el = document.getElementById('act-list');
+
+  if (!items?.length) {
+    el.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <div class="empty-txt">No activity yet</div>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = items.map(r => `
+    <div class="act-item">
+      <div class="act-dot ${r.type}">
+        ${r.type === 'income' ? '↑' : '↓'}
+      </div>
+
+      <div class="act-info">
+        <div class="act-cat">${r.category}</div>
+        <div class="act-date">
+          ${fdate(r.date)}
+          ${r.notes ? ' · ' + r.notes.substring(0, 28) : ''}
+        </div>
+      </div>
+
+      <div class="act-amt ${r.type}">
+        ${r.type === 'income' ? '+' : '-'}${money(r.amount)}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadMonthlyChart(canvasId) {
+  const year = new Date().getFullYear();
+
+  const res = await api(`/dashboard/monthly-trend/?year=${year}`);
+  if (!res?.ok) return;
+
+  const d = await res.json();
+
+  const labels  = d.monthly_trend.map(m => m.month);
+  const income  = d.monthly_trend.map(m => m.income);
+  const expense = d.monthly_trend.map(m => m.expense);
+
+  mkChart(canvasId, 'bar', {
+    labels,
+    datasets: [
+      {
+        label: 'Income',
+        data: income,
+        backgroundColor: 'rgba(45,212,160,.5)',
+        borderColor: 'var(--emerald)',
+        borderWidth: 1.5,
+        borderRadius: 5,
+        borderSkipped: false
+      },
+      {
+        label: 'Expense',
+        data: expense,
+        backgroundColor: 'rgba(244,97,122,.35)',
+        borderColor: 'var(--rose)',
+        borderWidth: 1.5,
+        borderRadius: 5,
+        borderSkipped: false
+      }
+    ]
+  }, chartOpts({ barPercentage: 0.7 }));
+}
+
+async function loadCatBars() {
+  const res = await api('/dashboard/category-breakdown/?type=expense');
+  if (!res?.ok) return;
+
+  const d = await res.json();
+
+  const items = d.breakdown.slice(0, 7);
+  const max = Math.max(...items.map(i => i.total), 1);
+
+  document.getElementById('cat-bars').innerHTML = items.map(i => `
+    <div class="cbar">
+      <div class="cbar-head">
+        <span class="cbar-name">${i.category_name}</span>
+        <span class="cbar-val">${money(i.total)}</span>
+      </div>
+
+      <div class="cbar-track">
+        <div class="cbar-fill expense"
+             style="width:${(i.total / max * 100).toFixed(1)}%">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+async function loadAnalytics() {
+  const year = document.getElementById('an-year').value;
+
+  const sumRes = await api(`/dashboard/summary/?year=${year}`);
+  if (sumRes?.ok) {
+    const d = await sumRes.json();
+    document.getElementById('an-income').textContent  = money(d.total_income);
+    document.getElementById('an-expense').textContent = money(d.total_expenses);
+    document.getElementById('an-balance').textContent = money(d.net_balance);
+    document.getElementById('an-income').style.color  = 'var(--emerald)';
+    document.getElementById('an-expense').style.color = 'var(--rose)';
+    document.getElementById('an-balance').style.color = d.net_balance >= 0 ? 'var(--gold2)' : 'var(--rose)';
+  }
+
+  const trendRes = await api(`/dashboard/monthly-trend/?year=${year}`);
+  if (trendRes?.ok) {
+    const d = await trendRes.json();
+    const labels  = d.monthly_trend.map(m => m.month);
+    const income  = d.monthly_trend.map(m => m.income);
+    const expense = d.monthly_trend.map(m => m.expense);
+    const net     = d.monthly_trend.map(m => m.net);
+
+    mkChart('ch-income-trend', 'line', {
+      labels,
+      datasets: [{ label: 'Income', data: income, borderColor: 'var(--emerald)', backgroundColor: 'rgba(45,212,160,.1)', fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: 'var(--emerald)' }]
+    }, chartOpts());
+    mkChart('ch-expense-trend', 'line', {
+      labels,
+      datasets: [{ label: 'Expense', data: expense, borderColor: 'var(--rose)', backgroundColor: 'rgba(244,97,122,.1)', fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: 'var(--rose)' }]
+    }, chartOpts());
+    const netColors = net.map(v => v >= 0 ? 'rgba(45,212,160,.6)' : 'rgba(244,97,122,.6)');
+    const netBorders = net.map(v => v >= 0 ? 'var(--emerald)' : 'var(--rose)');
+    mkChart('ch-net', 'bar', {
+      labels,
+      datasets: [{ label: 'Net Balance', data: net, backgroundColor: netColors, borderColor: netBorders, borderWidth: 1.5, borderRadius: 5, borderSkipped: false }]
+    }, chartOpts());
+  }
+
+  const weekRes = await api('/dashboard/weekly-trend/');
+  if (weekRes?.ok) {
+    const d = await weekRes.json();
+    const wLabels  = d.weekly_trend.map(w => w.week_starting);
+    const wIncome  = d.weekly_trend.map(w => w.income);
+    const wExpense = d.weekly_trend.map(w => w.expense);
+    mkChart('ch-weekly', 'bar', {
+      labels: wLabels,
+      datasets: [
+        { label: 'Income',  data: wIncome,  backgroundColor: 'rgba(45,212,160,.45)', borderRadius: 4 },
+        { label: 'Expense', data: wExpense, backgroundColor: 'rgba(244,97,122,.35)', borderRadius: 4 },
+      ]
+    }, chartOpts({ barPercentage: .8 }));
+  }
+
+  await loadAnCatBreakdown('expense', 'an-cat-expense');
+  await loadAnCatBreakdown('income',  'an-cat-income');
+}
+
+async function loadAnCatBreakdown(type, containerId) {
+  const year = document.getElementById('an-year').value;
+  const res = await api(`/dashboard/category-breakdown/?type=${type}&year=${year}`);
+  if (!res?.ok) return;
+  const d = await res.json();
+  const el = document.getElementById(containerId);
+  if (!d.breakdown.length) { el.innerHTML = '<div class="empty"><div class="empty-txt">No data</div></div>'; return; }
+  const max = Math.max(...d.breakdown.map(i => i.total), 1);
+  el.innerHTML = d.breakdown.map(i => `
+    <div class="cbar">
+      <div class="cbar-head"><span class="cbar-name">${i.category_name}</span><span class="cbar-val">${money(i.total)} <span style="color:var(--text3);font-size:10px;">(${i.record_count})</span></span></div>
+      <div class="cbar-track"><div class="cbar-fill ${type}" style="width:${(i.total / max * 100).toFixed(1)}%"></div></div>
+    </div>`).join('');
+}
+async function loadRecords(page = 1) {
+  const type   = document.getElementById('f-type').value;
+  const cat    = document.getElementById('f-cat').value;
+  const from   = document.getElementById('f-from').value;
+  const to     = document.getElementById('f-to').value;
+  const search = document.getElementById('f-search').value;
+
+  let url = `/finance/records/?page=${page}`;
+  if (type)   url += `&type=${type}`;
+  if (cat)    url += `&category=${cat}`;
+  if (from)   url += `&date_from=${from}`;
+  if (to)     url += `&date_to=${to}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+
+  const res = await api(url);
+  if (!res?.ok) return;
+  const d = await res.json();
+  window.currentRecords = d.results;
+
+  if (isAdmin()) {
+    document.getElementById('btn-add-record').style.display = '';
+    document.getElementById('th-act').style.display = '';
+  }
+
+  const tbody = document.getElementById('rec-tbody');
+  if (!d.results?.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No records found</div></div></td></tr>';
+    document.getElementById('rec-pager').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = d.results.map(r => `
+    <tr>
+      <td class="mono">${fdate(r.date)}</td>
+      <td><span class="badge ${r.type}">${r.type}</span></td>
+      <td class="primary">${r.category_name || '—'}</td>
+      <td class="mono" style="color:${r.type === 'income' ? 'var(--emerald)' : 'var(--rose2)'};font-weight:500;">
+        ${r.type === 'income' ? '+' : '-'}${money(r.amount)}
+      </td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);">${r.notes || '—'}</td>
+      <td>${r.created_by_name || '—'}</td>
+      ${isAdmin() ? `<td><div style="display:flex;gap:6px;">
+        <button class="btn-success" onclick="editRecordById(${r.id})">Edit</button>
+        <button class="btn-danger" onclick="delRecord(${r.id})">Del</button>
+      </div></td>` : '<td></td>'}
+    </tr>`).join('');
+
+  renderPager('rec-pager', d.count, page, loadRecords);
+}
+
+function editRecordById(id) {
+  const record = window.currentRecords.find(r => r.id === id);
+  if (record) openRecordModal(record);
+}
+
+function renderPager(id, total, cur, loader) {
+  const pages = Math.ceil(total / 10);
+  if (pages <= 1) {
+    document.getElementById(id).innerHTML = '';
+    return;
+  }
+
+  let h = `<span class="pager-info">${total} total</span>`;
+
+  h += `<button class="pager-btn" ${cur <= 1 ? 'disabled' : ''} onclick="${loader.name}(${cur - 1})">←</button>`;
+
+  for (let i = Math.max(1, cur - 1); i <= Math.min(pages, cur + 1); i++) {
+    h += `<button class="pager-btn ${i === cur ? 'active' : ''}" onclick="${loader.name}(${i})">${i}</button>`;
+  }
+
+  h += `<button class="pager-btn" ${cur >= pages ? 'disabled' : ''} onclick="${loader.name}(${cur + 1})">→</button>`;
+
+  document.getElementById(id).innerHTML = h;
+}
+
+function clearFilters() {
+  ['f-type', 'f-cat', 'f-from', 'f-to', 'f-search'].forEach(id => {
+    const e = document.getElementById(id);
+    if (e) e.value = '';
+  });
+  loadRecords(1);
+}
+
+function openRecordModal(rec = null) {
+  document.getElementById('modal-rec-title').textContent = rec ? 'Edit Record' : 'Add Record';
+  document.getElementById('rec-id').value     = rec?.id || '';
+  document.getElementById('rec-amount').value = rec?.amount || '';
+  document.getElementById('rec-type').value   = rec?.type || 'income';
+  document.getElementById('rec-cat').value    = rec?.category || '';
+  document.getElementById('rec-date').value   = rec?.date || new Date().toISOString().split('T')[0];
+  document.getElementById('rec-notes').value  = rec?.notes || '';
+  hideErr('rec-err');
+  openModal('modal-record');
+}
+
+function editRecord(r) { openRecordModal(r); }
+
+async function saveRecord() {
+  const id   = document.getElementById('rec-id').value;
+  const body = {
+    amount:   parseFloat(document.getElementById('rec-amount').value),
+    type:     document.getElementById('rec-type').value,
+    category: document.getElementById('rec-cat').value || null,
+    date:     document.getElementById('rec-date').value,
+    notes:    document.getElementById('rec-notes').value,
+  };
+
+  if (!body.amount || body.amount <= 0)
+    return showErr('rec-err', 'Amount must be greater than zero.');
+
+  if (!body.date)
+    return showErr('rec-err', 'Date is required.');
+
+  const res  = await api(
+    id ? `/finance/records/${id}/` : '/finance/records/',
+    { method: id ? 'PATCH' : 'POST', body: JSON.stringify(body) }
+  );
+
+  const data = await res?.json();
+  if (!res?.ok)
+    return showErr('rec-err', data?.message || JSON.stringify(data));
+
+  closeModal('modal-record');
+  toast(id ? 'Record updated!' : 'Record created!', 'success');
+  loadRecords(1);
+}
+
+async function delRecord(id) {
+  if (!confirm('Delete this record? (soft delete — data is preserved)')) return;
+
+  const res = await api(`/finance/records/${id}/`, { method: 'DELETE' });
+
+  if (res?.ok) {
+    toast('Record deleted.', 'success');
+    loadRecords(1);
+  } else {
+    toast('Delete failed.', 'error');
+  }
+}
+async function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+
+  if (page === 'categories') {
+    loadCatsPage();  
+  }
+}
+
+async function loadCats() {
+  const res = await api('/finance/categories/');
+  if (!res?.ok) return;
+
+  const data = await res.json();
+
+  allCats = Array.isArray(data) ? data : (data.results || data.data || []);
+
+  const sel = document.getElementById('rec-cat');
+  if (sel) {
+    sel.innerHTML =
+      '<option value="">— No Category —</option>' +
+      allCats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+
+  const fsel = document.getElementById('f-cat');
+  if (fsel) {
+    fsel.innerHTML =
+      '<option value="">All Categories</option>' +
+      allCats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+}
+
+async function loadCatsPage() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spin"></div>Loading…</div>';
+
+  await loadCats();
+
+  if (isAdmin()) document.getElementById('btn-add-cat').style.display = '';
+  if (!allCats || !allCats.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🏷️</div><div class="empty-txt">No categories yet</div></div>';
+    return;
+  }
+
+  grid.innerHTML = allCats.map(c => `
+    <div class="cat-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+        <div class="cat-name">${c.name}</div>
+        ${isAdmin() ? `<div style="display:flex;gap:5px;">
+          <button class="btn-success" onclick='openCatModal(${JSON.stringify(c).replace(/'/g,"&#39;")})'>Edit</button>
+          <button class="btn-danger" onclick="delCat(${c.id})">Del</button>
+        </div>` : ''}
+      </div>
+      <div class="cat-desc">${c.description || 'No description'}</div>
+      <div class="cat-meta">${fdate(c.created_at)}</div>
+    </div>
+  `).join('');
+}
+function openCatModal(cat = null) {
+  document.getElementById('modal-cat-title').textContent = cat ? 'Edit Category' : 'Add Category';
+  document.getElementById('cat-id').value   = cat?.id || '';
+  document.getElementById('cat-name').value = cat?.name || '';
+  document.getElementById('cat-desc').value = cat?.description || '';
+  openModal('modal-cat');
+}
+
+async function saveCat() {
+  const id   = document.getElementById('cat-id').value;
+  const name = document.getElementById('cat-name').value.trim();
+
+  if (!name) {
+    toast('Category name is required.', 'error');
+    return;
+  }
+
+  const body = {
+    name,
+    description: document.getElementById('cat-desc').value
+  };
+
+  const res = await api(
+    id ? `/finance/categories/${id}/` : '/finance/categories/',
+    {
+      method: id ? 'PUT' : 'POST',
+      body: JSON.stringify(body)
+    }
+  );
+
+  if (res?.ok) {
+    closeModal('modal-cat');   
+    toast(id ? 'Category updated!' : 'Category created!', 'success');
+    loadCatsPage();
+  } else {
+    const err = await res?.json();
+    toast(err?.message || JSON.stringify(err), 'error');
+  }
+}
+async function delCat(id) {
+  if (!confirm('Delete this category?')) return;
+
+  const res = await api(`/finance/categories/${id}/`, {
+    method: 'DELETE'
+  });
+
+  if (res && (res.ok || res.status === 204)) {
+    toast('Category deleted.', 'success');
+    loadCatsPage();
+    return;
+  }
+  let msg = 'Cannot delete — category may be linked.';
+  try {
+    const data = await res.json();
+    msg = data?.message || JSON.stringify(data);
+  } catch (e) {
+    if (res.status === 403) msg = 'Permission denied';
+  }
+
+  toast(msg, 'error');
+}
+async function loadUsers() {
+  const res = await api('/auth/users/');
+  if (!res?.ok) return;
+  const d = await res.json();
+  const users = d.results || d;
+  document.getElementById('users-tbody').innerHTML = users.map(u => `
+    <tr>
+      <td class="primary">${u.full_name}</td>
+      <td class="mono" style="font-size:11px;">${u.email}</td>
+      <td><span class="badge ${u.role}">${u.role}</span></td>
+      <td><span class="badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+      <td class="mono" style="font-size:11px;">${fdate(u.date_joined)}</td>
+      <td><div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn-success" onclick='openUserEdit(${JSON.stringify(u).replace(/'/g,"&#39;")})'>Edit</button>
+        ${u.id !== ME?.id ? `<button class="btn-danger" onclick="deactivateUser(${u.id},'${u.full_name}')">Deactivate</button>` : '<span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">you</span>'}
+      </div></td>
+    </tr>`).join('');
+}
+
+function openUserModal() {
+  document.getElementById('modal-user-title').textContent = 'Add User';
+  document.getElementById('user-id').value = '';
+  document.getElementById('user-create-fields').style.display = '';
+  document.getElementById('u-status-field').style.display = 'none';
+  ['u-name','u-email','u-pass','u-pass2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('u-role').value = 'viewer';
+  hideErr('user-err');
+  openModal('modal-user');
+}
+
+function openUserEdit(u) {
+  document.getElementById('modal-user-title').textContent = 'Edit User';
+  document.getElementById('user-id').value = u.id;
+  document.getElementById('user-create-fields').style.display = 'none';
+  document.getElementById('u-status-field').style.display = '';
+  document.getElementById('u-role').value   = u.role;
+  document.getElementById('u-status').value = String(u.is_active);
+  hideErr('user-err');
+  openModal('modal-user');
+}
+
+async function saveUser() {
+  const id = document.getElementById('user-id').value;
+  if (id) {
+    const body = { role: document.getElementById('u-role').value, is_active: document.getElementById('u-status').value === 'true' };
+    const res  = await api(`/auth/users/${id}/`, { method: 'PATCH', body: JSON.stringify(body) });
+    if (res?.ok) { closeModal('modal-user'); toast('User updated!', 'success'); loadUsers(); }
+    else { const e = await res?.json(); showErr('user-err', e?.message || JSON.stringify(e)); }
+  } else {
+    const body = {
+      full_name: document.getElementById('u-name').value.trim(),
+      email:     document.getElementById('u-email').value.trim(),
+      password:  document.getElementById('u-pass').value,
+      confirm_password: document.getElementById('u-pass2').value,
+      role:      document.getElementById('u-role').value,
+    };
+    if (!body.full_name || !body.email || !body.password) return showErr('user-err', 'Fill all required fields.');
+    const res  = await api('/auth/users/', { method: 'POST', body: JSON.stringify(body) });
+    const data = await res?.json();
+    if (res?.ok) { closeModal('modal-user'); toast('User created!', 'success'); loadUsers(); }
+    else showErr('user-err', data?.message || JSON.stringify(data));
+  }
+}
+
+async function deactivateUser(id, name) {
+  if (!confirm(`Deactivate "${name}"?`)) return;
+  const res = await api(`/auth/users/${id}/`, { method: 'DELETE' });
+  if (res?.ok) { toast(`${name} deactivated.`, 'success'); loadUsers(); }
+  else toast('Action failed.', 'error');
+}
+
+async function loadProfile() {
+  const res = await api('/auth/profile/');
+  if (!res?.ok) return;
+  const u = await res.json();
+  ME = u;
+  document.getElementById('pr-avatar').textContent = u.full_name[0].toUpperCase();
+  document.getElementById('pr-name').textContent   = u.full_name;
+  document.getElementById('pr-email').textContent  = u.email;
+  document.getElementById('pr-role').textContent   = u.role;
+  document.getElementById('pr-status').textContent = u.is_active ? 'Active' : 'Inactive';
+  document.getElementById('pr-joined').textContent = fdate(u.date_joined);
+  document.getElementById('pr-upd-name').value = u.full_name;
+}
+
+async function updateProfile() {
+  const full_name = document.getElementById('pr-upd-name').value.trim();
+  if (!full_name) return toast('Name cannot be empty.', 'error');
+  const res = await api('/auth/profile/', { method: 'PUT', body: JSON.stringify({ full_name }) });
+  if (res?.ok) { toast('Profile updated!', 'success'); loadProfile(); }
+  else toast('Update failed.', 'error');
+}
+
+async function changePwd() {
+  const old_password         = document.getElementById('pw-old').value;
+  const new_password         = document.getElementById('pw-new').value;
+  const confirm_new_password = document.getElementById('pw-new2').value;
+  if (!old_password || !new_password) return toast('Fill all password fields.', 'error');
+  if (new_password !== confirm_new_password) return toast('New passwords do not match.', 'error');
+  const res = await api('/auth/change-password/', { method: 'POST', body: JSON.stringify({ old_password, new_password, confirm_new_password }) });
+  if (res?.ok) {
+    toast('Password changed!', 'success');
+    ['pw-old','pw-new','pw-new2'].forEach(id => document.getElementById(id).value = '');
+  } else {
+    const e = await res?.json();
+    toast(e?.message || JSON.stringify(e), 'error');
+  }
+}
+window.addEventListener('DOMContentLoaded', async () => {
+  if (access && ME)       { bootApp(); }
+  else if (access)        { await loadMe(); if (ME) bootApp(); }
+});
+</script>
+</body>
+</html>
