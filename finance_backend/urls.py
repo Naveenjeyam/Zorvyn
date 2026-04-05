@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from core import views
+from django.shortcuts import render
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -17,11 +18,10 @@ schema_view = get_schema_view(
     permission_classes=[AllowAny],
 )
 
-def health(request):
-    return JsonResponse({"status": "ok", "message": "API is running"})
+def index(request):
+    return render(request, 'index.html')
 
 urlpatterns = [
-    path("", health),
     path("admin/", admin.site.urls),
     path("", views.index),
     path("api/auth/", include("core.urls")),
