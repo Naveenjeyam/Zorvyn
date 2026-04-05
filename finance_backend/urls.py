@@ -1,28 +1,24 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from rest_framework.permissions import AllowAny
-from django.contrib import admin
-from django.urls import path, include
-from core.views import index
 
 schema_view = get_schema_view(
     openapi.Info(
         title="Finance Dashboard API",
         default_version="v1",
-        description="Backend API for the Finance Dashboard System",
-        contact=openapi.Contact(email="admin@finance.com"),
+        description="Backend API for Finance Dashboard System",
     ),
     public=True,
     permission_classes=[AllowAny],
 )
 
 urlpatterns = [
-    
     path("admin/", admin.site.urls),
-    path('', index),
+    # ← REMOVE the path('', index) line completely
+
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),

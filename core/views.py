@@ -161,6 +161,3 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         user.is_active = False
         user.save()
         return Response({"message": f"User '{user.email}' has been deactivated."})
-    
-def index(request):
-    return render(request, 'index.html')
