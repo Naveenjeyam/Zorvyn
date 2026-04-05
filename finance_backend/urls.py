@@ -5,25 +5,23 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Finance Dashboard API",
         default_version="v1",
-        description="Role-based Finance Dashboard Backend API",
-        contact=openapi.Contact(email="admin@finance.com"),
+        description="Finance Dashboard Backend API",
     ),
     public=True,
     permission_classes=[AllowAny],
 )
-def health(request):
-    """Simple health check endpoint."""
-    return JsonResponse({"status": "ok", "message": "Finance API is running."})
-urlpatterns = [
 
+def health(request):
+    return JsonResponse({"status": "ok", "message": "API is running"})
+
+urlpatterns = [
     path("", health),
-    path("health/", health),
     path("admin/", admin.site.urls),
-    path("api/auth/login",include("index")),
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),

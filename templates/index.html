@@ -732,12 +732,12 @@ td.mono{font-family:var(--font-mono);font-size:12px;}
 <div id="toast"></div>
 
 <script>
-const API = 'https://zorvyn-65h4.onrender.com/api';
+const API = 'http://127.0.0.1:8000/';
 let access  = localStorage.getItem('fl_access')  || '';
 let refresh = localStorage.getItem('fl_refresh') || '';
 let ME      = JSON.parse(localStorage.getItem('fl_user') || 'null');
 let curPage = 'dashboard';
-let allCats = [];
+let allCats = []; 
 let charts  = {};
 let searchT = null;
 
@@ -827,7 +827,6 @@ async function handleLogin() {
   const email = document.getElementById('l-email').value.trim();
   const password = document.getElementById('l-pass').value;
   if (!email || !password) return showErr('auth-err', 'Please fill in both fields.');
-  const API = "https://zorvyn-65h4.onrender.com";
   const res = await fetch(API + '/auth/login/', {
   method: 'POST',
   headers: {

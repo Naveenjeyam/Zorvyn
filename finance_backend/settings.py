@@ -31,7 +31,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",   # ← MUST be first
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -40,7 +40,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
@@ -61,22 +60,15 @@ TEMPLATES = [
         },
     },
 ]
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
 WSGI_APPLICATION = "finance_backend.wsgi.application"
 
-import os
-
-if os.getenv("RENDER"):  # running on Render
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-else:  # local development (MySQL)
-    DATABASES = {
+DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
             "NAME": os.getenv("DB_NAME", "finance_db"),
