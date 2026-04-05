@@ -14,6 +14,10 @@ ALLOWED_HOSTS = [
 ]
 ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://zorvyn-65h4.onrender.com"
+]
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
