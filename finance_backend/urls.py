@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from core import views
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -22,6 +23,7 @@ def health(request):
 urlpatterns = [
     path("", health),
     path("admin/", admin.site.urls),
+    path("", views.index),
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),
