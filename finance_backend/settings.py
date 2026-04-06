@@ -6,9 +6,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = [   "127.0.0.1",
-    "localhost",
-    ".onrender.com"] 
+ALLOWED_HOSTS = [ 'Naveenjeyam.pythonanywhere.com'] 
 
 CSRF_TRUSTED_ORIGINS = [
     "https://zorvynfinance-o4pn.onrender.com"
@@ -43,6 +41,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
