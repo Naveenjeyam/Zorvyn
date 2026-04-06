@@ -378,23 +378,19 @@ td.mono{font-family:var(--font-mono);font-size:12px;}
       </div>
       <div id="auth-err" class="err-box"></div>
 
-     <div id="login-form">
+<div id="login-form">
   <form onsubmit="event.preventDefault(); handleLogin();">
-
     <div class="field">
       <label>Email Address</label>
-      <input type="email" id="l-email" placeholder="admin@finance.com" required>
+      <input type="email" id="l-email" placeholder="admin@finance.com" autocomplete="email" required>
     </div>
-
     <div class="field">
       <label>Password</label>
-      <input type="password" id="l-pass" placeholder="••••••••" required>
+      <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" required>
     </div>
-
-    <button class="btn-primary" type="submit">Sign In</button>
-
+    <button type="submit" class="btn-primary">Sign In</button>
   </form>
-</div>
+</div> 
 
       <div id="reg-form" style="display:none">
         <div class="field"><label>Full Name</label><input type="text" id="r-name" placeholder="Your full name"></div>
@@ -836,8 +832,7 @@ function switchTab(tab) {
 
 async function handleLogin() {
   hideErr('auth-err');
-
-  const email = document.getElementById('l-email').value.trim();
+  const email    = document.getElementById('l-email').value.trim();
   const password = document.getElementById('l-pass').value;
 
   if (!email || !password) {
@@ -845,35 +840,28 @@ async function handleLogin() {
   }
 
   try {
-    const response = await fetch("https://zorvynfinance-o4pn.onrender.com/api/auth/login/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: email,   // ✅ use email as username OR map properly in backend
-        password: password
-      })
+    const res = await fetch('https://zorvynfinance-o4pn.onrender.com/api/auth/login/', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email: email, password: password }),
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
-    if (!response.ok) {
-      return showErr('auth-err', data.detail || 'Invalid credentials.');
+    if (!res.ok) {
+      const msg = data.detail || data.message || data.email?.[0] || data.non_field_errors?.[0] || 'Invalid credentials.';
+      return showErr('auth-err', msg);
     }
 
-    let access = data.access;
-    let refresh = data.refresh;
-
-    localStorage.setItem('fl_access', access);
+    access  = data.access;
+    refresh = data.refresh;
+    localStorage.setItem('fl_access',  access);
     localStorage.setItem('fl_refresh', refresh);
-
     await loadMe();
     bootApp();
 
-  } catch (error) {
-    console.error(error);
-    showErr('auth-err', 'Server error. Please try again.');
+  } catch (err) {
+    showErr('auth-err', 'Cannot reach server. Check your connection.');
   }
 }
 
