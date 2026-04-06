@@ -70,9 +70,6 @@ STATICFILES_DIRS = [
 
 WSGI_APPLICATION = "finance_backend.wsgi.application"
 
-import os
-
-# Use SQLite on Render (when DATABASE_URL is not set), MySQL locally
 if os.getenv("RENDER"):
     DATABASES = {
         "default": {
