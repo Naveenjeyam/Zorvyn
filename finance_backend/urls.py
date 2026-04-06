@@ -20,16 +20,17 @@ schema_view = get_schema_view(
 
 def index(request):
     return render(request, 'index.html')
-
 def run_seed(request):
-    """
-    One-time seed endpoint. Call this from browser to seed the database.
-    DELETE this endpoint after seeding is done.
-    """
     import os
     secret = request.GET.get("key", "")
-    if secret != os.getenv("SEED_KEY", "seed-finance-2024"):
-        return JsonResponse({"error": "Invalid key"}, status=403)
+    expected = os.getenv("SEED_KEY", "seed-finance-2024")
+    
+    if secret != expected:
+        return JsonResponse({
+            "error": "Invalid key",
+            "provided": secret,
+            "hint": "Add SEED_KEY to Render environment variables"
+        }, status=403)
 
     try:
         from django.contrib.auth import get_user_model
@@ -39,33 +40,78 @@ def run_seed(request):
         import decimal
 
         User = get_user_model()
-        created = []
+        results = []
 
-        # Create users
-        users_data = [
-            {"email": "admin@finance.com",    "password": "Admin@1234",    "full_name": "Admin User",    "role": "admin",    "is_staff": True},
-            {"email": "analyst@finance.com",  "password": "Analyst@1234",  "full_name": "Analyst User",  "role": "analyst"},
-            {"email": "viewer@finance.com",   "password": "Viewer@1234",   "full_name": "Viewer User",   "role": "viewer"},
+        # ── Create Admin ──────────────────────────────────────
+        if not User.objects.filter(email="admin@finance.com").exists():
+            User.objects.create_user(
+                email="admin@finance.com",
+                password="Admin@1234",
+                full_name="Admin User",
+                role="admin",
+                is_staff=True,
+                is_superuser=True,
+            )
+            results.append("✅ Admin created")
+        else:
+            # Reset password in case it changed
+            u = User.objects.get(email="admin@finance.com")
+            u.set_password("Admin@1234")
+            u.is_active = True
+            u.save()
+            results.append("🔄 Admin password reset")
+
+        # ── Create Analyst ────────────────────────────────────
+        if not User.objects.filter(email="analyst@finance.com").exists():
+            User.objects.create_user(
+                email="analyst@finance.com",
+                password="Analyst@1234",
+                full_name="Analyst User",
+                role="analyst",
+            )
+            results.append("✅ Analyst created")
+        else:
+            u = User.objects.get(email="analyst@finance.com")
+            u.set_password("Analyst@1234")
+            u.is_active = True
+            u.save()
+            results.append("🔄 Analyst password reset")
+
+        # ── Create Viewer ─────────────────────────────────────
+        if not User.objects.filter(email="viewer@finance.com").exists():
+            User.objects.create_user(
+                email="viewer@finance.com",
+                password="Viewer@1234",
+                full_name="Viewer User",
+                role="viewer",
+            )
+            results.append("✅ Viewer created")
+        else:
+            u = User.objects.get(email="viewer@finance.com")
+            u.set_password("Viewer@1234")
+            u.is_active = True
+            u.save()
+            results.append("🔄 Viewer password reset")
+
+        # ── Create Categories ─────────────────────────────────
+        cat_names = [
+            "Salary", "Freelance", "Rent",
+            "Food & Groceries", "Utilities", "Transport",
+            "Healthcare", "Entertainment", "Investments", "Miscellaneous"
         ]
-        for u in users_data:
-            if not User.objects.filter(email=u["email"]).exists():
-                User.objects.create_user(**u)
-                created.append(f"User: {u['email']}")
-
-        # Create categories
-        cat_names = ["Salary","Freelance","Rent","Food & Groceries","Utilities","Transport","Healthcare","Entertainment","Investments","Miscellaneous"]
         cat_objects = {}
         for name in cat_names:
-            cat, _ = Category.objects.get_or_create(name=name)
+            cat, created = Category.objects.get_or_create(name=name)
             cat_objects[name] = cat
+        results.append(f"✅ {len(cat_names)} categories ready")
 
-        # Create records
+        # ── Create Records ────────────────────────────────────
         admin_user = User.objects.get(email="admin@finance.com")
-        record_count = FinancialRecord.objects.count()
 
-        if record_count == 0:
+        if FinancialRecord.objects.count() == 0:
             income_cats  = ["Salary", "Freelance", "Investments"]
-            expense_cats = ["Rent", "Food & Groceries", "Utilities", "Transport", "Healthcare", "Entertainment", "Miscellaneous"]
+            expense_cats = ["Rent", "Food & Groceries", "Utilities",
+                           "Transport", "Healthcare", "Entertainment", "Miscellaneous"]
             records = []
             today = date.today()
 
@@ -74,26 +120,39 @@ def run_seed(request):
                 record_date = today - timedelta(days=random.randint(0, 180))
                 cat_name    = random.choice(income_cats if is_income else expense_cats)
                 records.append(FinancialRecord(
-                    amount      = decimal.Decimal(str(round(random.uniform(500, 50000), 2))),
-                    type        = "income" if is_income else "expense",
-                    category    = cat_objects[cat_name],
-                    date        = record_date,
-                    notes       = f"Sample record {i + 1}",
-                    created_by  = admin_user,
+                    amount     = decimal.Decimal(str(round(random.uniform(500, 50000), 2))),
+                    type       = "income" if is_income else "expense",
+                    category   = cat_objects[cat_name],
+                    date       = record_date,
+                    notes      = f"Sample record {i + 1}",
+                    created_by = admin_user,
                 ))
+
             FinancialRecord.objects.bulk_create(records)
-            created.append(f"60 financial records")
+            results.append(f"✅ 60 financial records created")
+        else:
+            results.append(f"ℹ️ Records already exist: {FinancialRecord.objects.count()}")
 
         return JsonResponse({
-            "status": "success",
-            "created": created,
-            "total_users": User.objects.count(),
-            "total_records": FinancialRecord.objects.count(),
+            "status":           "success",
+            "results":          results,
+            "total_users":      User.objects.count(),
+            "total_records":    FinancialRecord.objects.count(),
             "total_categories": Category.objects.count(),
+            "login_with": {
+                "admin":   "admin@finance.com / Admin@1234",
+                "analyst": "analyst@finance.com / Analyst@1234",
+                "viewer":  "viewer@finance.com / Viewer@1234",
+            }
         })
 
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        import traceback
+        return JsonResponse({
+            "status":    "error",
+            "message":   str(e),
+            "traceback": traceback.format_exc(),
+        }, status=500)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
