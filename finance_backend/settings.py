@@ -65,7 +65,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 WSGI_APPLICATION = "finance_backend.wsgi.application"
 
-DATABASES = {
+import os
+
+# Use SQLite on Render (when DATABASE_URL is not set), MySQL locally
+if os.getenv("RENDER"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
+    }
+else:
+    DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
             "NAME": os.getenv("DB_NAME", "finance_db"),
@@ -73,9 +84,9 @@ DATABASES = {
             "PASSWORD": os.getenv("DB_PASSWORD", "Naveen@06"),
             "HOST": os.getenv("DB_HOST", "localhost"),
             "PORT": os.getenv("DB_PORT", "3306"),
+            "OPTIONS": {"charset": "utf8mb4"},
         }
     }
-
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
