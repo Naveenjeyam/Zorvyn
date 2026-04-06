@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from core import views
+from django.shortcuts import render
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Finance Dashboard API",
@@ -18,13 +18,9 @@ schema_view = get_schema_view(
     permission_classes=[AllowAny],
 )
 
-def health(request):
-    return JsonResponse({"status": "ok", "message": "API is running"})
+def index(request):
+    return render(request, 'index.html')
 
-def frontend(request):
-    return render(request, "dashboard.html")
-
-@csrf_exempt
 def run_seed(request):
     """
     One-time seed endpoint. Call this from browser to seed the database.
@@ -99,14 +95,9 @@ def run_seed(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-def index(request):
-    return request(render,"index.html");
-
 urlpatterns = [
-    path("", index),
-    path("health/", health),
-    path("seed/", run_seed),          # ← seed endpoint
     path("admin/", admin.site.urls),
+    path("", views.index,name="index"),
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),
