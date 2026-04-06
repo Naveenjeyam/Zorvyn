@@ -1,7 +1,5 @@
 import django_filters
 from .models import FinancialRecord
-
-
 class FinancialRecordFilter(django_filters.FilterSet):
     
     date_from = django_filters.DateFilter(field_name="date", lookup_expr="gte")
