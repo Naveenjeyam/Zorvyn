@@ -79,9 +79,9 @@ else:
         "default": {
             "ENGINE": "django.db.backends.mysql",
             "NAME": os.getenv("DB_NAME", "finance_db"),
-            "USER": os.getenv("DB_USER", "root"),
+            "USER": os.getenv("DB_USER", "Naveenjeyam$finance_db"),
             "PASSWORD": os.getenv("DB_PASSWORD", "Naveen@06"),
-            "HOST": os.getenv("DB_HOST", "localhost"),
+            "HOST": os.getenv("DB_HOST", "Naveenjeyam.mysql.pythonanywhere-services.com"),
             "PORT": os.getenv("DB_PORT", "3306"),
             "OPTIONS": {"charset": "utf8mb4"},
         }
