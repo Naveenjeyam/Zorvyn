@@ -23,7 +23,7 @@ def index(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.index,name="index"),
+    path("", index),
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),
