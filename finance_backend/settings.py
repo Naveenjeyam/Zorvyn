@@ -2,13 +2,18 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+
 load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = [   "127.0.0.1",
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
     "localhost",
-    ".onrender.com"] 
+    ".onrender.com"
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://zorvynfinance-o4pn.onrender.com"
@@ -33,12 +38,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",       # ← FIRST always
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ← after security
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -46,6 +51,11 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'x-csrftoken',
+]
 
 ROOT_URLCONF = "finance_backend.urls"
 
@@ -64,11 +74,14 @@ TEMPLATES = [
         },
     },
 ]
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 WSGI_APPLICATION = "finance_backend.wsgi.application"
 
+# ── Database ───────────────────────────────────────────────
 if os.getenv("RENDER"):
     DATABASES = {
         "default": {
@@ -88,6 +101,7 @@ else:
             "OPTIONS": {"charset": "utf8mb4"},
         }
     }
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -99,7 +113,6 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "core.User"
@@ -123,24 +136,13 @@ REST_FRAMEWORK = {
     ],
 }
 
+# ── JWT ────────────────────────────────────────────────────
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "ACCESS_TOKEN_LIFETIME":  timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
+    "ROTATE_REFRESH_TOKENS":  True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME':  timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'AUTH_HEADER_TYPES':      ('Bearer',),
-    'USER_ID_FIELD':          'id',
-    'USER_ID_CLAIM':          'user_id',
+    "AUTH_HEADER_TYPES":      ("Bearer",),
+    "USER_ID_FIELD":          "id",
+    "USER_ID_CLAIM":          "user_id",
 }

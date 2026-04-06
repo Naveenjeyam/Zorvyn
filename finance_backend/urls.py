@@ -156,12 +156,12 @@ def run_seed(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.index,name="index"),
+    path("", views.index, name="index"),
+    path("run-seed/", run_seed, name="run-seed"),  # ← ADD THIS
     path("api/auth/", include("core.urls")),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/finance/", include("finance.urls")),
     path("api/dashboard/", include("dashboard.urls")),
     path("api/docs/", schema_view.with_ui("swagger", cache_timeout=0), name="swagger-ui"),
     path("api/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="redoc"),
-    path("run-seed/", run_seed, name="run-seed"),
 ]
