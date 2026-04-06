@@ -6,7 +6,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = ["*"] 
+ALLOWED_HOSTS = [   "127.0.0.1",
+    "localhost",
+    ".onrender.com"] 
 
 CSRF_TRUSTED_ORIGINS = [
     "https://zorvyn-65h4.onrender.com"
@@ -62,6 +64,9 @@ TEMPLATES = [
 ]
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
 
 WSGI_APPLICATION = "finance_backend.wsgi.application"
 
