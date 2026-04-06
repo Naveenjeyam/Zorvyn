@@ -6,7 +6,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-dev-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = [ 'Naveenjeyam.pythonanywhere.com'] 
+ALLOWED_HOSTS = [   "127.0.0.1",
+    "localhost",
+    ".onrender.com"] 
 
 CSRF_TRUSTED_ORIGINS = [
     "https://zorvynfinance-o4pn.onrender.com"
@@ -78,10 +80,10 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("DB_NAME", "Naveenjeyam$finance_db"),
-            "USER": os.getenv("DB_USER", "Naveenjeyam"),
+            "NAME": os.getenv("DB_NAME", "finance_db"),
+            "USER": os.getenv("DB_USER", "root"),
             "PASSWORD": os.getenv("DB_PASSWORD", "Naveen@06"),
-            "HOST": os.getenv("DB_HOST", "Naveenjeyam.mysql.pythonanywhere-services.com"),
+            "HOST": os.getenv("DB_HOST", "localhost"),
             "PORT": os.getenv("DB_PORT", "3306"),
             "OPTIONS": {"charset": "utf8mb4"},
         }
