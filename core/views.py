@@ -3,7 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 
@@ -16,6 +18,48 @@ from .serializers import (
 from .permissions import IsAdmin, IsAnyRole
 
 User = get_user_model()
+# ── Custom Email Login Serializer ──────────────────────────
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
+
+    def validate(self, attrs):
+        email    = attrs.get('email')
+        password = attrs.get('password')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {'detail': 'No active account found with the given credentials.'}
+            )
+
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                {'detail': 'No active account found with the given credentials.'}
+            )
+
+        if not user.is_active:
+            raise serializers.ValidationError(
+                {'detail': 'This account has been deactivated.'}
+            )
+
+        refresh = self.get_token(user)
+        return {
+            'refresh': str(refresh),
+            'access':  str(refresh.access_token),
+            'user':    UserSerializer(user).data,  # ← bonus: sends user info too
+        }
+
+# ── Login View ─────────────────────────────────────────────
+class LoginView(TokenObtainPairView):
+    """
+    POST /api/auth/login/
+    Accepts email + password, returns access + refresh JWT tokens.
+    """
+    permission_classes    = [AllowAny]
+    serializer_class      = EmailTokenObtainPairSerializer  # ← key fix
+
+
 class RegisterView(APIView):
     """
     POST /api/auth/register/

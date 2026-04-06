@@ -163,4 +163,5 @@ urlpatterns = [
     path("api/dashboard/", include("dashboard.urls")),
     path("api/docs/", schema_view.with_ui("swagger", cache_timeout=0), name="swagger-ui"),
     path("api/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="redoc"),
+    path("run-seed/", run_seed, name="run-seed"),
 ]
