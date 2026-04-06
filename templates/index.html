@@ -392,7 +392,6 @@ td.mono{font-family:var(--font-mono);font-size:12px;}
     </div>
 
     <button class="btn-primary" type="submit">Sign In</button>
-
   </form>
 </div>
 
@@ -836,21 +835,45 @@ function switchTab(tab) {
 
 async function handleLogin() {
   hideErr('auth-err');
+
   const email = document.getElementById('l-email').value.trim();
   const password = document.getElementById('l-pass').value;
-  if (!email || !password) return showErr('auth-err', 'Please fill in both fields.');
-  const res = await fetch("https://zorvynfinance-o4pn.onrender.com/api/auth/login/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })   // ← email not username
-  });
-  const data = await res.json();
-  if (!res.ok) return showErr('auth-err', data.detail || 'Invalid credentials.');
-  access = data.access; refresh = data.refresh;
-  localStorage.setItem('fl_access', access);
-  localStorage.setItem('fl_refresh', refresh);
-  await loadMe();
-  bootApp();
+
+  if (!email || !password) {
+    return showErr('auth-err', 'Please fill in both fields.');
+  }
+
+  try {
+    const response = await fetch("https://zorvynbackend-w3qy.onrender.com/api/auth/login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: email,   // ✅ use email as username OR map properly in backend
+        password: password
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return showErr('auth-err', data.detail || 'Invalid credentials.');
+    }
+
+    let access = data.access;
+    let refresh = data.refresh;
+
+    localStorage.setItem('fl_access', access);
+    localStorage.setItem('fl_refresh', refresh);
+
+    await loadMe();
+    bootApp();
+
+  } catch (error) {
+    console.error(error);
+    showErr('auth-err', 'Server error. Please try again.');
+  }
 }
 
 async function handleRegister() {
