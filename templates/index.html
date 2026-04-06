@@ -828,15 +828,10 @@ async function handleLogin() {
   const password = document.getElementById('l-pass').value;
   if (!email || !password) return showErr('auth-err', 'Please fill in both fields.');
   const res = await fetch("https://zorvyn-65h4.onrender.com/api/auth/login/", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    username: email,
-    password
-  })
-});
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })   // ← email not username
+  });
   const data = await res.json();
   if (!res.ok) return showErr('auth-err', data.detail || 'Invalid credentials.');
   access = data.access; refresh = data.refresh;
