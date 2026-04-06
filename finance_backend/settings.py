@@ -11,7 +11,7 @@ ALLOWED_HOSTS = [   "127.0.0.1",
     ".onrender.com"] 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://zorvyn-65h4.onrender.com"
+    "https://zorvynfinance-o4pn.onrender.com"
 ]
 
 INSTALLED_APPS = [
